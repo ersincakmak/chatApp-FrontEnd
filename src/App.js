@@ -1,14 +1,14 @@
-import { io } from 'socket.io-client'
-import { useEffect, useState } from 'react'
-import Home from './components/Home'
-import db from './db'
+import { io } from "socket.io-client"
+import { useEffect, useState } from "react"
+import Home from "./components/Home"
+import db from "./db"
 
 const firestore = db.firestore()
 
 const users = []
 
 firestore
-  .collection('users')
+  .collection("users")
   .get()
   .then((data) => {
     data.forEach((snapshot) => {
@@ -16,29 +16,29 @@ firestore
     })
   })
 
-const socket = io('http://localhost:3001/', {
-  transports: ['websocket', 'polling', 'flashsocket'],
+const socket = io("https://ckmrsn-first-chatapi.herokuapp.com/", {
+  transports: ["websocket", "polling", "flashsocket"],
 })
 
 function App() {
   const [connected, setconnected] = useState(false)
-  const [usernam, setusernam] = useState('')
+  const [usernam, setusernam] = useState("")
   const [onlineusers, setonlineusers] = useState([])
   const [rooms, setrooms] = useState([])
   const [currentReciever, setcurrentReciever] = useState({
-    name: 'Genel',
+    name: "Genel",
     isChannel: true,
   })
   const [lastReciever, setlastReciever] = useState({
-    name: 'Genel',
+    name: "Genel",
     isChannel: true,
   })
   const [messages, setmessages] = useState([])
-  const [currentmessage, setcurrentmessage] = useState('')
+  const [currentmessage, setcurrentmessage] = useState("")
   const [allusers, setallusers] = useState([])
 
   useEffect(() => {
-    socket.on('user_connected', (users) => {
+    socket.on("user_connected", (users) => {
       setonlineusers(users)
       getAllUser()
     })
@@ -46,11 +46,11 @@ function App() {
     getAllUser()
     getAllRooms()
 
-    socket.on('create_room', (room) => {
+    socket.on("create_room", (room) => {
       getAllRooms()
     })
 
-    socket.on('new_message', (props) => {
+    socket.on("new_message", (props) => {
       setmessages((messages) => [
         ...messages,
         {
@@ -68,7 +68,7 @@ function App() {
       if (item === true) {
         firestore
           .collection(currentReciever.name)
-          .orderBy('date')
+          .orderBy("date")
           .get()
           .then((item) => {
             item.forEach((snapshot) => {
@@ -84,8 +84,8 @@ function App() {
           })
       } else {
         firestore
-          .collection('messages')
-          .orderBy('date')
+          .collection("messages")
+          .orderBy("date")
           .get()
           .then((item) => {
             item.forEach((snapshot) => {
@@ -109,10 +109,10 @@ function App() {
       }
     })
     if (currentReciever.isChannel === true) {
-      socket.emit('join_room', currentReciever.name)
+      socket.emit("join_room", currentReciever.name)
     } else {
       if (lastReciever.isChannel === true) {
-        socket.emit('leave_room', lastReciever.name)
+        socket.emit("leave_room", lastReciever.name)
       }
     }
   }, [currentReciever])
@@ -120,8 +120,8 @@ function App() {
   const getAllUser = async () => {
     let users = []
     await firestore
-      .collection('users')
-      .orderBy('name')
+      .collection("users")
+      .orderBy("name")
       .get()
       .then((item) => {
         item.forEach((snapshot) => {
@@ -141,7 +141,7 @@ function App() {
           message: message,
         })
       } else {
-        firestore.collection('messages').doc().set({
+        firestore.collection("messages").doc().set({
           from: from,
           date: date,
           message: message,
@@ -150,7 +150,7 @@ function App() {
       }
     })
 
-    socket.emit('send_message', { from, to, date, message })
+    socket.emit("send_message", { from, to, date, message })
 
     if (currentReciever.isChannel === false) {
       setmessages((messages) => [
@@ -171,7 +171,7 @@ function App() {
       .get()
       .then((item) => {
         item.forEach((snapshot) =>
-          snapshot.exists === true ? (checker = true) : ''
+          snapshot.exists === true ? (checker = true) : ""
         )
       })
     return checker
@@ -185,8 +185,8 @@ function App() {
   const getAllRooms = async () => {
     const rooms = []
     await firestore
-      .collection('rooms')
-      .orderBy('name')
+      .collection("rooms")
+      .orderBy("name")
       .get()
       .then((item) => {
         item.forEach((snapshot) => {
@@ -197,19 +197,19 @@ function App() {
   }
 
   const addNewRoom = (roomname, date) => {
-    socket.emit('create_room', { roomname, date })
+    socket.emit("create_room", { roomname, date })
   }
 
   const connect = async () => {
-    if (usernam === '' || usernam === ' ') {
+    if (usernam === "" || usernam === " ") {
     } else {
       setconnected(true)
       const data = users.find((item) => item === usernam.trim())
       if (!data) {
-        await firestore.collection('users').doc().set({ name: usernam.trim() })
-        socket.emit('user_connected', usernam.trim())
+        await firestore.collection("users").doc().set({ name: usernam.trim() })
+        socket.emit("user_connected", usernam.trim())
       } else {
-        socket.emit('user_connected', usernam.trim())
+        socket.emit("user_connected", usernam.trim())
       }
     }
   }
