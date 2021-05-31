@@ -115,7 +115,7 @@ function App() {
         socket.emit("leave_room", lastReciever.name)
       }
     }
-  }, [currentReciever])
+  }, [currentReciever, lastReciever.isChannel, lastReciever.name, usernam])
 
   const getAllUser = async () => {
     let users = []
